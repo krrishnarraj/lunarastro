@@ -70,7 +70,10 @@ with st.spinner("Calculating planetary positions…"):
 st.plotly_chart(
     build_chart(sky),
     use_container_width=True,
-    config=dict(displayModeBar=False, displaylogo=False),
+    config={
+        "scrollZoom": False,  # disable mouse‐wheel zoom
+        "displayModeBar": False,  # hide the mode bar
+    },
 )
 
 # Build and show table (no index)

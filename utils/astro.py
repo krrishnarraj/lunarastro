@@ -1,6 +1,7 @@
 import swisseph as swe
 from datetime import datetime
 import math
+import sys
 
 AYANAMSAS = {
     "lahiri": swe.SIDM_LAHIRI,
@@ -33,6 +34,10 @@ class Astro:
             "rahu": swe.MEAN_NODE,
             "ketu": None,
         }
+
+        # FIXME debug
+        print(f"astro: {dt_utc}")
+        sys.stdout.flush()
 
         jd = swe.julday(
             dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour + (dt_utc.minute / 60)

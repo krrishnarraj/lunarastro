@@ -235,5 +235,7 @@ def build_chart(planets):
         showlegend=False,
         margin=dict(l=20, r=20, t=20, b=20),
         height=800,
+        dragmode=False,  # disable all drag interactions
+        hovermode="closest",  # ensure hover still works
     )
     return fig
