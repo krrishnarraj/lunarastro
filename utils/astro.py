@@ -61,6 +61,8 @@ class Astro:
                 lon, lat, dist, dlon, dlat, dr = coords
                 out[planet]["lon"] = lon
                 out[planet]["dlon"] = dlon
+                print(f"{planet}: {lon}")
+                sys.stdout.flush()
             except Exception as e:
                 print(f"exception {planet}: {e}")
 
