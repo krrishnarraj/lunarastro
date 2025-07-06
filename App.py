@@ -1,6 +1,7 @@
 import streamlit as st
-import pytz
+import pandas as pd
 from datetime import datetime, timezone
+import pytz
 from utils.astro import Astro
 from utils.chart_utils import (
     build_chart,
@@ -9,36 +10,45 @@ from utils.chart_utils import (
     deg_in_house,
     deg_min,
 )
-from utils.datetime_utils import smart_inc, time_widget
 
 st.set_page_config(page_title="Planetary Positions", layout="wide")
 st.title("Planetary Positions")
 
 
-# cache Astro singleton
+# Cache singleton Astro
 @st.cache_resource
 def get_astro():
     return Astro()
 
 
-# Sidebar init
+# Sidebar IST inputs
 ist = pytz.timezone("Asia/Kolkata")
-now = datetime.now(ist)
-for k, v in dict(
-    year=now.year, month=now.month, day=now.day, hour=now.hour, minute=now.minute
-).items():
-    st.session_state.setdefault(k, v)
+now_ist = datetime.now(ist)
+
+# Initialize defaults in session_state
+for key, val in {
+    "year": now_ist.year,
+    "month": now_ist.month,
+    "day": now_ist.day,
+    "hour": now_ist.hour,
+    "minute": now_ist.minute,
+}.items():
+    st.session_state.setdefault(key, val)
 
 st.sidebar.subheader("IST Local Date Time")
 
-# draw each widget by delegating to our helper
-time_widget("Year", "year", 1900, 2100)
-time_widget("Month", "month", 1, 12)
-time_widget("Day", "day", 1, 31)
-time_widget("Hour", "hour", 0, 23)
-time_widget("Minute", "minute", 0, 59)
+# number_inputs with built-in ± steppers
+year = st.sidebar.number_input(
+    "Year", min_value=1900, max_value=2100, step=1, key="year"
+)
+month = st.sidebar.number_input("Month", min_value=1, max_value=12, step=1, key="month")
+day = st.sidebar.number_input("Day", min_value=1, max_value=31, step=1, key="day")
+hour = st.sidebar.number_input("Hour", min_value=0, max_value=23, step=1, key="hour")
+minute = st.sidebar.number_input(
+    "Minute", min_value=0, max_value=59, step=1, key="minute"
+)
 
-# show chosen IST
+# Show selected IST once
 ist_dt = ist.localize(
     datetime(
         st.session_state.year,
@@ -50,30 +60,33 @@ ist_dt = ist.localize(
 )
 st.sidebar.success(f"Selected IST : {ist_dt:%d %b %Y  %H:%M}")
 
-# fetch & draw
+# Fetch sky details in UTC
 astro = get_astro()
 utc_dt = ist_dt.astimezone(timezone.utc)
-with st.spinner("Calculating sky…"):
+with st.spinner("Calculating planetary positions…"):
     sky = astro.get_sky_details(utc_dt)
 
+# Draw chart
 st.plotly_chart(
     build_chart(sky),
     use_container_width=True,
     config=dict(displayModeBar=False, displaylogo=False),
 )
 
-# table
+# Build and show table (no index)
 houses, _, psym, pname, _ = static_data()
 rows = []
-for pl, data in sky.items():
-    d, m = deg_min(deg_in_house(data["lon"]))
+for pl, dat in sky.items():
+    d, m = deg_min(deg_in_house(dat["lon"]))
     rows.append(
-        dict(
-            Planet=f"{psym[pl]} {pname[pl]}",
-            House=houses[astro_house(data["lon"])],
-            Position=f"{d}° {m:02d}'",
-            Speed=f"{data['dlon']:.4f}",
-            Retrograde="Yes" if data["dlon"] < 0 else "No",
-        )
+        {
+            "Planet": f"{psym[pl]} {pname[pl]}",
+            "House": houses[astro_house(dat["lon"])],
+            "Position": f"{d}° {m:02d}'",
+            "Speed": f"{dat['dlon']:.4f}",
+            "Retrograde": "Yes" if dat["dlon"] < 0 else "No",
+        }
     )
-st.table(rows)
+
+df = pd.DataFrame(rows)
+st.dataframe(df, use_container_width=True, hide_index=True)
