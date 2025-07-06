@@ -55,13 +55,13 @@ class Astro:
                 continue
 
             try:
-                coords, _ = swe.calc_ut(
+                coords, rflags = swe.calc_ut(
                     jd, pcode, flags=swe.FLG_SWIEPH | swe.FLG_SIDEREAL | swe.FLG_SPEED
                 )
                 lon, lat, dist, dlon, dlat, dr = coords
                 out[planet]["lon"] = lon
                 out[planet]["dlon"] = dlon
-                print(f"{planet}: {lon}")
+                print(f"{rflags} {planet}: {lon}")
                 sys.stdout.flush()
             except Exception as e:
                 print(f"exception {planet}: {e}")
