@@ -40,8 +40,14 @@ class Astro:
         sys.stdout.flush()
 
         jd = swe.julday(
-            dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour + (dt_utc.minute / 60)
+            dt_utc.year,
+            dt_utc.month,
+            dt_utc.day,
+            dt_utc.hour + (dt_utc.minute / 60),
+            swe.GREG_CAL,
         )
+        print(f"jd: {jd}")
+        sys.stdout.flush()
 
         for planet, pcode in planets.items():
             out[planet] = {}
