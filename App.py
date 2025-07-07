@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime, timezone
 import pytz
-from utils.astro import Astro
+from utils.astro import get_sky_details
 from utils.chart_utils import (
     build_chart,
     static_data,
@@ -13,12 +13,6 @@ from utils.chart_utils import (
 
 st.set_page_config(page_title="Planetary Positions", layout="wide")
 st.title("Planetary Positions")
-
-
-# Cache singleton Astro
-@st.cache_resource
-def get_astro():
-    return Astro()
 
 
 # Sidebar IST inputs
@@ -61,10 +55,9 @@ ist_dt = ist.localize(
 st.sidebar.success(f"Selected IST : {ist_dt:%d %b %Y  %H:%M}")
 
 # Fetch sky details in UTC
-astro = get_astro()
 utc_dt = ist_dt.astimezone(timezone.utc)
 with st.spinner("Calculating planetary positions…"):
-    sky = astro.get_sky_details(utc_dt)
+    sky = get_sky_details(utc_dt)
 
 # Draw chart
 st.plotly_chart(
