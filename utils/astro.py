@@ -35,10 +35,6 @@ class Astro:
             "ketu": None,
         }
 
-        # FIXME debug
-        print(f"astro: {dt_utc}")
-        sys.stdout.flush()
-
         jd = swe.julday(
             dt_utc.year,
             dt_utc.month,
@@ -46,8 +42,6 @@ class Astro:
             dt_utc.hour + (dt_utc.minute / 60),
             swe.GREG_CAL,
         )
-        print(f"jd: {jd}")
-        sys.stdout.flush()
 
         for planet, pcode in planets.items():
             out[planet] = {}
@@ -55,13 +49,12 @@ class Astro:
                 continue
 
             try:
-                coords, rflags = swe.calc_ut(
+                coords, _ = swe.calc_ut(
                     jd, pcode, flags=swe.FLG_SWIEPH | swe.FLG_SIDEREAL | swe.FLG_SPEED
                 )
                 lon, lat, dist, dlon, dlat, dr = coords
                 out[planet]["lon"] = lon
                 out[planet]["dlon"] = dlon
-                print(f"{rflags} {planet}: {lon}")
                 sys.stdout.flush()
             except Exception as e:
                 print(f"exception {planet}: {e}")
